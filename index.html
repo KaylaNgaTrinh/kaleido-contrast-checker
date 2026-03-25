@@ -6,13 +6,6 @@
 <title>Kaleido Contrast Checker</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-
-/* ── Embed / iframe mode ── */
-body.embed-mode { background: #fff; }
-body.embed-mode .page-wrap { max-width: 100%; margin: 0; padding: 0; }
-body.embed-mode .page-title,
-body.embed-mode .page-sub { display: none; }
-body.embed-mode #cte { border-radius: 0; border-left: none; border-right: none; border-top: none; }
   
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a202c;}
 body.dark{background:#0f1118;}
@@ -22,11 +15,12 @@ body.dark{background:#0f1118;}
 body.dark .page-title{color:#f7fafc;}
 body.dark .page-sub{color:#a0aec0;}
 
-body.embed-mode{background:#fff;}
-body.dark.embed-mode{background:#1a1a2e;}
-body.embed-mode .page-wrap{max-width:100%;margin:0;padding:0;}
-body.embed-mode .page-title,body.embed-mode .page-sub{display:none;}
-body.embed-mode #kce{border-radius:0;border-left:none;border-right:none;border-top:none;}
+/* ── Embed / iframe mode ── */
+body.embed-mode { background: #fff; }
+body.embed-mode .page-wrap { max-width: 100%; margin: 0; padding: 0; }
+body.embed-mode .page-title,
+body.embed-mode .page-sub { display: none; }
+body.embed-mode #kce { border-radius: 0; border-left: none; border-right: none; border-top: none; }
 
 #kce{background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:visible;}
 body.dark #kce{background:#1a1a2e;border-color:rgba(255,255,255,.08);}
