@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaleido Contrast Checker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Lato:wght@400;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a202c;}
+body.dark{background:#0f1118;}
+.page-wrap{max-width:1040px;margin:40px auto;padding:0 24px 80px;}
+.page-title{font-size:22px;font-weight:700;color:#1a202c;margin-bottom:4px;}
+.page-sub{font-size:14px;color:#718096;margin-bottom:28px;}
+body.dark .page-title{color:#f7fafc;}
+body.dark .page-sub{color:#a0aec0;}
+
+body.embed-mode{background:#fff;}
+body.dark.embed-mode{background:#1a1a2e;}
+body.embed-mode .page-wrap{max-width:100%;margin:0;padding:0;}
+body.embed-mode .page-title,body.embed-mode .page-sub{display:none;}
+body.embed-mode #kce{border-radius:0;border-left:none;border-right:none;border-top:none;}
+
+#kce{background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:visible;}
+body.dark #kce{background:#1a1a2e;border-color:rgba(255,255,255,.08);}
+
+/* HEADER */
+.kce-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;border-bottom:1px solid #e2e8f0;gap:10px;
+  border-radius:16px 16px 0 0;background:#fff;
+  position:sticky;top:0;z-index:20;flex-wrap:wrap;
+}
+body.dark .kce-header{background:#1a1a2e;border-color:rgba(255,255,255,.08);}
+.kce-header-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.kce-header-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+
+/* DROPDOWN */
+.kce-dd{position:relative;}
+.kce-dd-btn{
+  display:flex;align-items:center;gap:7px;padding:7px 13px;
+  border:1px solid #e2e8f0;border-radius:99px;background:#f7f8fa;
+  font-size:13px;font-weight:500;color:#2d3748;cursor:pointer;
+  transition:border-color .15s,box-shadow .15s;white-space:nowrap;font-family:inherit;
+}
+.kce-dd-btn:hover{border-color:#a0aec0;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+body.dark .kce-dd-btn{background:#232338;border-color:rgba(255,255,255,.1);color:#e2e8f0;}
+.kce-brand-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(0,0,0,.15);flex-shrink:0;}
+.kce-dd-btn svg{width:13px;height:13px;opacity:.5;flex-shrink:0;}
+.kce-dd-menu{
+  position:absolute;top:calc(100% + 6px);left:0;min-width:max-content;
+  background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;display:none;
+}
+.kce-dd-menu.open{display:block;}
+body.dark .kce-dd-menu{background:#232338;border-color:rgba(255,255,255,.1);box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.kce-dd-menu button{
+  display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;
+  border:none;background:none;text-align:left;font-size:13px;color:#2d3748;
+  cursor:pointer;transition:background .1s;white-space:nowrap;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+.kce-dd-menu button:hover{background:#f7f8fa;}
+body.dark .kce-dd-menu button{color:#e2e8f0;}
+body.dark .kce-dd-menu button:hover{background:rgba(255,255,255,.06);}
+.kce-dd-menu button.kce-active{font-weight:700;}
+.b-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(0,0,0,.15);flex-shrink:0;}
+
+/* MODE TOGGLE */
+.kce-mode-toggle{
+  display:flex;align-items:center;
+  background:#f0f2f5;border-radius:99px;
+  padding:3px;gap:0;border:1px solid #e2e8f0;
+}
+body.dark .kce-mode-toggle{background:#0f1118;border-color:rgba(255,255,255,.1);}
+.kce-mode-btn{
+  padding:5px 13px;border-radius:99px;border:none;background:none;
+  font-size:13px;font-weight:500;color:#718096;cursor:pointer;
+  transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px;font-family:inherit;
+}
+.kce-mode-btn.kce-active{background:#fff;color:#1a202c;box-shadow:0 1px 4px rgba(0,0,0,.10);}
+.kce-mode-btn.dimmed{opacity:.35;cursor:not-allowed;}
+body.dark .kce-mode-btn.kce-active{background:#2d2d4a;color:#f7fafc;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.kce-mode-btn .icon-solid{display:none;}
+.kce-mode-btn .icon-outline{display:inline;}
+.kce-mode-btn.kce-active .icon-outline{display:none;}
+.kce-mode-btn.kce-active .icon-solid{display:inline;}
+
+/* ICON BUTTONS */
+.kce-icon-btn{
+  width:32px;height:32px;border-radius:8px;border:1px solid #e2e8f0;
+  background:#f7f8fa;color:#a0aec0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.kce-icon-btn:hover,.kce-icon-btn.kce-active{border-color:#a0aec0;color:#2d3748;background:#edf2f7;}
+.kce-icon-btn svg{width:14px;height:14px;}
+body.dark .kce-icon-btn{background:#232338;border-color:rgba(255,255,255,.1);color:#718096;}
+body.dark .kce-icon-btn:hover{background:rgba(255,255,255,.08);color:#e2e8f0;border-color:rgba(255,255,255,.2);}
+#kce-btn-toggle-all svg{transition:transform .2s;}
+#kce-btn-toggle-all.all-open svg{transform:rotate(180deg);}
+
+/* LEGEND BAR */
+.kce-legend{
+  display:flex;align-items:center;gap:10px;padding:7px 20px;
+  border-bottom:1px solid #e2e8f0;background:#fafbfc;flex-wrap:wrap;
+}
+body.dark .kce-legend{background:#141424;border-color:rgba(255,255,255,.08);}
+.kce-legend-label{font-size:10px;font-weight:700;color:#a0aec0;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;}
+.kce-legend-item{display:flex;align-items:center;gap:5px;}
+.kce-legend-badge{
+  font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;
+  display:inline-flex;align-items:center;gap:3px;
+}
+.kce-legend-badge.pass {background:#dcfce7;color:#15803d;}
+.kce-legend-badge.large{background:#fef9c3;color:#a16207;}
+.kce-legend-badge.fail {background:#fee2e2;color:#dc2626;}
+.kce-legend-desc{font-size:11px;color:#a0aec0;}
+.kce-legend-sep{color:#cbd5e0;font-size:12px;}
+
+/* FILTER PILLS */
+.kce-filter-pill{cursor:pointer;user-select:none;transition:opacity .15s,box-shadow .1s;gap:5px;}
+.kce-filter-pill:hover{box-shadow:0 0 0 2px currentColor;}
+.kce-filter-pill.inactive{opacity:.35;}
+/* Hide cells via body class — visibility:hidden preserves column widths */
+body.kce-hide-pass  .kce-cell[data-score="pass"]  {visibility:hidden;}
+body.kce-hide-large .kce-cell[data-score="large"] {visibility:hidden;}
+body.kce-hide-fail  .kce-cell[data-score="fail"]  {visibility:hidden;}
+
+/* GROUPS */
+.kce-groups{padding:0 20px;}
+.kce-group{border-bottom:1px solid #e2e8f0;}
+.kce-group:last-child{border-bottom:none;}
+body.dark .kce-group{border-color:rgba(255,255,255,.08);}
+.kce-group-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 0;cursor:pointer;user-select:none;
+}
+.kce-group-hdr:hover .kce-gh-label{color:#1a202c;}
+body.dark .kce-group-hdr:hover .kce-gh-label{color:#f7fafc;}
+.kce-gh-left{display:flex;align-items:center;gap:10px;}
+.kce-gh-folder{width:16px;height:16px;color:#a0aec0;flex-shrink:0;}
+.kce-gh-label{font-size:14px;font-weight:500;color:#4a5568;transition:color .15s;}
+body.dark .kce-gh-label{color:#a0aec0;}
+.kce-gh-note{font-size:11.5px;color:#a0aec0;}
+.kce-gh-chevron{width:15px;height:15px;color:#a0aec0;transition:transform .2s;flex-shrink:0;}
+.kce-group.open .kce-gh-chevron{transform:rotate(180deg);}
+.kce-group-body{display:none;padding-bottom:20px;}
+.kce-group.open .kce-group-body{display:block;}
+
+/* CONTRAST TABLE */
+.kce-table-wrap{overflow-x:auto;padding-bottom:4px;margin-top:4px;}
+.kce-table-wrap::-webkit-scrollbar{height:4px;}
+.kce-table-wrap::-webkit-scrollbar-track{background:transparent;}
+.kce-table-wrap::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:2px;}
+body.dark .kce-table-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);}
+
+.kce-table{border-collapse:separate;border-spacing:0;width:100%;min-width:500px;table-layout:fixed;}
+.kce-table thead th{
+  font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:#a0aec0;padding:4px 0 10px 8px;text-align:center;vertical-align:bottom;
+}
+body.dark .kce-table thead th{color:#718096;}
+.kce-table thead th.th-label-col{text-align:left;padding-left:0;width:110px;}
+
+/* Row label cell — styled like column headers */
+td.kce-row-label{
+  padding:0 12px 8px 0;vertical-align:middle;width:110px;
+}
+.kce-rl-inner{display:flex;flex-direction:column;gap:2px;}
+.kce-rl-name{
+  font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:#a0aec0;display:block;line-height:1.3;
+}
+body.dark .kce-rl-name{color:#718096;}
+
+/* Table data cell wrapper */
+td.kce-td{padding:0 0 8px 8px;vertical-align:top;}
+
+/* Contrast cell — fill column width */
+.kce-cell{
+  border-radius:10px;overflow:hidden;
+  border:1.5px solid rgba(0,0,0,.07);
+  width:100%;
+}
+body.dark .kce-cell{border-color:rgba(255,255,255,.07);}
+
+.kce-swatch{
+  padding:13px 14px 10px;
+  min-height:72px;
+  display:block;
+}
+/* Preview text styles */
+.kce-prev{display:block;}
+.kce-prev-h1{font-size:26px;font-weight:700;line-height:30px;letter-spacing:0;}
+.kce-prev-p1{font-size:13px;font-weight:400;line-height:18px;letter-spacing:0;}
+.kce-prev-link{font-size:13px;font-weight:500;line-height:18px;letter-spacing:0;text-decoration:underline;text-underline-offset:2px;}
+.kce-prev-legal{font-size:11px;font-weight:400;line-height:15px;letter-spacing:0;}
+.kce-score-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:4px;
+  padding:6px 10px;
+  background:#fff;border-top:1px solid #f0f2f5;
+}
+body.dark .kce-score-bar{background:#1a1a2e;border-top-color:rgba(255,255,255,.06);}
+.kce-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:99px;white-space:nowrap;
+}
+.kce-badge.pass {background:#dcfce7;color:#15803d;}
+.kce-badge.large{background:#fef9c3;color:#a16207;}
+.kce-badge.fail {background:#fee2e2;color:#dc2626;}
+.kce-ratio{font-size:10.5px;font-weight:600;color:#a0aec0;white-space:nowrap;}
+body.dark .kce-ratio{color:#718096;}
+
+/* Cell interactivity */
+.kce-cell{cursor:pointer;transition:border-color .12s,box-shadow .12s;}
+.kce-cell:hover{border-color:rgba(0,0,0,.18);}
+.kce-cell.kce-selected{border-color:#0097D0;box-shadow:0 0 0 2px rgba(0,151,208,.18);}
+body.dark .kce-cell:hover{border-color:rgba(255,255,255,.2);}
+body.dark .kce-cell.kce-selected{border-color:#19B6F1;box-shadow:0 0 0 2px rgba(25,182,241,.18);}
+
+/* ── Popover ── */
+.kce-overlay{position:fixed;inset:0;z-index:150;display:none;}
+.kce-overlay.on{display:block;}
+.kce-pop{
+  position:fixed;width:260px;background:#fff;
+  border:1px solid #e2e8f0;border-radius:16px;
+  box-shadow:0 12px 40px rgba(0,0,0,.14);z-index:200;
+  display:none;animation:kcePopIn .13s ease-out;overflow:hidden;
+}
+.kce-pop.on{display:block;}
+body.dark .kce-pop{background:#1a1a2e;border-color:rgba(255,255,255,.1);box-shadow:0 12px 40px rgba(0,0,0,.5);}
+@keyframes kcePopIn{from{opacity:0;transform:scale(.95) translateY(4px);}to{opacity:1;transform:scale(1) translateY(0);}}
+
+.kce-pop-hdr{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 14px 10px;gap:8px;}
+.kce-pop-title{font-size:12.5px;font-weight:600;color:#1a202c;line-height:1.35;}
+body.dark .kce-pop-title{color:#f7fafc;}
+.kce-pop-close{
+  width:22px;height:22px;border-radius:50%;border:1px solid #e2e8f0;
+  background:#f7f8fa;font-size:14px;cursor:pointer;color:#718096;
+  display:flex;align-items:center;justify-content:center;transition:background .1s;flex-shrink:0;
+}
+.kce-pop-close:hover{background:#edf2f7;}
+body.dark .kce-pop-close{background:#232338;border-color:rgba(255,255,255,.1);color:#a0aec0;}
+body.dark .kce-pop-close:hover{background:rgba(255,255,255,.08);}
+
+.kce-pop-swatch{
+  height:80px;margin:0 14px;border-radius:10px;
+  border:1px solid rgba(0,0,0,.07);
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+}
+.kce-pop-aa{font-size:32px;font-weight:700;letter-spacing:-.02em;}
+.kce-pop-badge{
+  position:absolute;bottom:7px;right:8px;
+  font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:99px;
+  display:flex;align-items:center;gap:4px;
+}
+.kce-pop-badge.pass{background:rgba(220,252,231,.9);color:#15803d;}
+.kce-pop-badge.large{background:rgba(254,249,195,.9);color:#a16207;}
+.kce-pop-badge.fail{background:rgba(254,226,226,.9);color:#dc2626;}
+
+.kce-pop-body{padding:10px 14px 14px;display:flex;flex-direction:column;gap:6px;}
+.kce-pop-group-lbl{
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:#a0aec0;margin-top:4px;
+}
+.kce-pop-group-lbl:first-child{margin-top:0;}
+body.dark .kce-pop-group-lbl{color:#718096;}
+.kce-pop-divider{height:1px;background:#e2e8f0;margin:4px 0;}
+body.dark .kce-pop-divider{background:rgba(255,255,255,.08);}
+.kce-pop-field{display:flex;flex-direction:column;gap:3px;}
+.kce-pop-field-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a0aec0;}
+body.dark .kce-pop-field-lbl{color:#718096;}
+.kce-pop-field-row{display:flex;align-items:center;gap:6px;}
+.kce-pop-val{
+  flex:1;font-size:10.5px;font-family:'SF Mono','Fira Mono',monospace;color:#2d3748;
+  background:#f7f8fa;border:1px solid #e2e8f0;border-radius:6px;
+  padding:5px 8px;overflow-wrap:anywhere;line-height:1.4;min-width:0;white-space:normal;
+}
+body.dark .kce-pop-val{background:#232338;border-color:rgba(255,255,255,.1);color:#e2e8f0;}
+.kce-pop-copy{
+  width:26px;height:26px;border-radius:6px;border:1px solid #e2e8f0;
+  background:#f7f8fa;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .1s,border-color .1s,color .1s;color:#a0aec0;position:relative;
+}
+.kce-pop-copy:hover{background:#edf2f7;color:#2d3748;}
+.kce-pop-copy.copied{background:#c6f6d5;border-color:#9ae6b4;color:#276749;}
+body.dark .kce-pop-copy{background:#232338;border-color:rgba(255,255,255,.1);}
+body.dark .kce-pop-copy:hover{background:rgba(255,255,255,.08);color:#e2e8f0;}
+.kce-pop-copy.copied::after{
+  content:'Copied!';position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  background:#276749;color:#fff;font-size:9.5px;font-weight:700;
+  padding:3px 8px;border-radius:5px;white-space:nowrap;z-index:10;pointer-events:none;
+}
+.kce-pop-copy.copied::before{
+  content:'';position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:#276749;z-index:10;pointer-events:none;
+}
+
+/* COMPARE BUTTON */
+.kce-cmp-btn{
+  display:flex;align-items:center;gap:6px;padding:7px 13px;
+  border:1.5px solid #e2e8f0;border-radius:99px;background:#f7f8fa;
+  font-size:13px;font-weight:500;color:#4a5568;cursor:pointer;
+  transition:all .15s;white-space:nowrap;font-family:inherit;
+}
+.kce-cmp-btn:hover{border-color:#a0aec0;}
+.kce-cmp-btn.on{background:#ebf4ff;border-color:#4299e1;color:#2b6cb0;}
+.kce-cmp-btn svg{width:14px;height:14px;}
+body.dark .kce-cmp-btn{background:#232338;border-color:rgba(255,255,255,.1);color:#e2e8f0;}
+body.dark .kce-cmp-btn.on{background:#1e3a5f;border-color:#4299e1;color:#90cdf4;}
+.kce-cmp-count{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:#4299e1;color:#fff;border-radius:99px;
+  font-size:10px;font-weight:700;min-width:17px;height:17px;padding:0 4px;
+}
+
+/* COMPARE DROPDOWN ITEMS */
+.kce-cmp-item{
+  display:flex;align-items:center;gap:10px;width:100%;padding:9px 16px;
+  border:none;background:none;cursor:pointer;font-size:13px;color:#2d3748;
+  transition:background .1s;user-select:none;text-align:left;font-family:inherit;
+}
+.kce-cmp-item:hover{background:#f7f8fa;}
+body.dark .kce-cmp-item{color:#e2e8f0;}
+body.dark .kce-cmp-item:hover{background:rgba(255,255,255,.06);}
+.kce-cmp-item.locked{cursor:default;}
+.kce-cmp-item.locked:hover{background:none;}
+body.dark .kce-cmp-item.locked:hover{background:none;}
+.kce-chk-box{
+  width:16px;height:16px;border-radius:4px;border:1.5px solid #cbd5e0;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s;
+}
+.kce-cmp-item.checked .kce-chk-box{background:#3182ce;border-color:#3182ce;}
+.kce-cmp-item.locked.checked .kce-chk-box{background:#4299e1;border-color:#4299e1;}
+.kce-cmp-tag{font-size:10px;color:#a0aec0;margin-left:auto;}
+
+/* COMPARE ROW-BY-ROW LAYOUT */
+.th-brand-col{width:62px;}
+.kce-brand-cell{padding:0 8px 8px 0;vertical-align:middle;}
+.kce-bc-inner{display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.kce-bc-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(0,0,0,.12);flex-shrink:0;}
+body.dark .kce-bc-dot{border-color:rgba(255,255,255,.2);}
+.kce-bc-label{font-size:11px;font-weight:600;color:#718096;}
+/* Compare mode: label divider sits OUTSIDE overflow-x containers so sticky works vs viewport */
+.kce-label-divider{
+  position:sticky;top:var(--kce-sticky-row,52px);z-index:2;
+  background:#f0f2f5;
+  margin-left:-20px;margin-right:-20px;
+  padding:5px 28px;
+  font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#718096;
+  border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;
+}
+body.dark .kce-label-divider{background:#12131f;color:#718096;border-color:rgba(255,255,255,.08);}
+/* Ghost thead: preserves column widths in subsequent mini-tables without showing headers */
+.kce-ghost-thead th{visibility:hidden;padding-top:0!important;padding-bottom:0!important;line-height:0;font-size:0;border:none!important;}
+/* Spacer between token groups in compare mode */
+.kce-cmp-sep{height:8px;}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="page-title">Contrast Checker</div>
+  <div class="page-sub">Kaleido Design System · WCAG 2.1 AA Normal (4.5:1) · 5 brands</div>
+  <div id="kce"></div>
+</div>
+
+<!-- POPOVER -->
+<div class="kce-overlay" id="kce-overlay" onclick="closeKcePopover()"></div>
+<div class="kce-pop" id="kce-pop">
+  <div class="kce-pop-hdr">
+    <span class="kce-pop-title" id="kce-pop-title"></span>
+    <button class="kce-pop-close" onclick="closeKcePopover()">×</button>
+  </div>
+  <div class="kce-pop-swatch" id="kce-pop-swatch">
+    <span class="kce-pop-aa" id="kce-pop-aa">Aa</span>
+    <span class="kce-pop-badge" id="kce-pop-badge"></span>
+  </div>
+  <div class="kce-pop-body">
+    <div class="kce-pop-group-lbl">Text</div>
+    <div class="kce-pop-field">
+      <span class="kce-pop-field-lbl">Token</span>
+      <div class="kce-pop-field-row">
+        <span class="kce-pop-val" id="kce-pop-fg-token"></span>
+        <button class="kce-pop-copy" onclick="kcePopCopy('kce-pop-fg-token',this)" title="Copy token">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 11V3a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="kce-pop-field">
+      <span class="kce-pop-field-lbl">Hex</span>
+      <div class="kce-pop-field-row">
+        <span class="kce-pop-val" id="kce-pop-fg-hex"></span>
+        <button class="kce-pop-copy" onclick="kcePopCopy('kce-pop-fg-hex',this)" title="Copy hex">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 11V3a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="kce-pop-divider"></div>
+    <div class="kce-pop-group-lbl">Background</div>
+    <div class="kce-pop-field">
+      <span class="kce-pop-field-lbl">Token</span>
+      <div class="kce-pop-field-row">
+        <span class="kce-pop-val" id="kce-pop-bg-token"></span>
+        <button class="kce-pop-copy" onclick="kcePopCopy('kce-pop-bg-token',this)" title="Copy token">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 11V3a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="kce-pop-field">
+      <span class="kce-pop-field-lbl">Hex</span>
+      <div class="kce-pop-field-row">
+        <span class="kce-pop-val" id="kce-pop-bg-hex"></span>
+        <button class="kce-pop-copy" onclick="kcePopCopy('kce-pop-bg-hex',this)" title="Copy hex">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 11V3a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── EMBED / IFRAME DETECTION ─────────────────────────────────────────────────
+(function(){
+  const inIframe=(function(){ try{ return window.self!==window.top; }catch(e){ return true; } })();
+  const hasParam=new URLSearchParams(window.location.search).has('embed');
+  if(inIframe||hasParam) document.body.classList.add('embed-mode');
+})();
+
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+
+const BRANDS = {
+  Reliant:{ color:'#0097D0', hasDark:true  },
+  DE:     { color:'#FFA440', hasDark:true  },
+  GME:    { color:'#28B574', hasDark:false },
+  DP:     { color:'#004C97', hasDark:false },
+  Cirro:  { color:'#1AC0FF', hasDark:false },
+};
+const BRAND_LABELS = {
+  Reliant:'Reliant', DE:'DE (Direct Energy)',
+  GME:'GME (Green Mountain)', DP:'DP (Discount Power)', Cirro:'Cirro'
+};
+const BRAND_KEYS = ['Reliant','DE','GME','DP','Cirro'];
+
+const FONTS = {
+  Reliant:{ primary:"Effra,'Trebuchet MS',sans-serif",       secondary:null              },
+  DE:     { primary:"'Basic Sans',Inter,sans-serif",          secondary:"Inter,sans-serif" },
+  GME:    { primary:"Montserrat,sans-serif",                  secondary:null              },
+  DP:     { primary:"'Josefin Sans',sans-serif",              secondary:null              },
+  Cirro:  { primary:"Lato,sans-serif",                        secondary:null              },
+};
+
+const NEUTRAL_VALS = {
+  Reliant:{
+    light:{'000':'#FFFFFF','100':'#F8F8F8','200':'#F4F4F4','300':'#F0F0F0','600':'#8C8C8C','900':'#231F20'},
+    dark: {'000':'#0B242E','100':'#001B25','200':'#011117','300':'#030E12','600':'#87979E','900':'#FFFFFF'}
+  },
+  DE:{
+    light:{'000':'#FFFFFF','100':'#FAFAFA','200':'#F6F6F6','300':'#F0F0F0','600':'#6C6C6C','900':'#000000'},
+    dark: {'000':'#000028','100':'#000028','200':'#000014','300':'#6C6C80','600':'#F0F0FF','900':'#FFFFFF'}
+  },
+  GME:  {light:{'000':'#FFFFFF','100':'#F6F6F8','200':'#DADCDE','300':'#8C8E90','600':'#525455','900':'#525455'}},
+  DP:   {light:{'000':'#FFFFFF','100':'#F2F2F2','200':'#D0D0CE','300':'#838385','600':'#4A4949','900':'#4A4949'}},
+  Cirro:{light:{'000':'#FFFFFF','100':'#F9F9F9','200':'#D0D0CE','300':'#838385','600':'#000000','900':'#000000'}},
+};
+
+const BRAND_SURFACES = {
+  Reliant:{
+    light:{
+      'Primary · Base':'#0097D0','Primary · Lightest':'#F2FBFF',
+      'Secondary · Base':'#333092','Secondary · Lightest':'#F4F4F9',
+      'Tertiary · Base':'#CD007A','Tertiary · Lightest':'#FEF2F9',
+    },
+    dark:{
+      'Primary · Base':'#19B6F1','Primary · Lightest':'#094055',
+      'Secondary · Base':'#8197C8','Secondary · Lightest':'#132642',
+      'Tertiary · Base':'#EB2F96','Tertiary · Lightest':'#381D41',
+    }
+  },
+  DE:{
+    light:{
+      'Primary · Base':'#FFA440','Primary · Lightest':'#FFF3E2',
+      'Secondary · Base':'#FFDD4D','Secondary · Lightest':'#FFFEE9',
+      'Tertiary · Base':'#B180F6','Tertiary · Lightest':'#F0E4FD',
+    },
+    dark:{
+      'Primary · Base':'#FFA440','Primary · Lightest':'#CD2500',
+      'Secondary · Base':'#FFDD4D','Secondary · Lightest':'#806F27',
+      'Tertiary · Base':'#B180F6','Tertiary · Lightest':'#7648B4',
+    }
+  },
+  GME:{light:{
+    'Primary · Base':'#28B574','Primary · Lightest':'#EDFFF3',
+    'Secondary · Base':'#16A8D3','Secondary · Lightest':'#F2FCFF',
+    'Tertiary · Base':'#F47825','Tertiary · Lightest':'#FFF6ED',
+  }},
+  DP:{light:{
+    'Primary · Base':'#004C97','Primary · Lightest':'#F2FCFF',
+    'Secondary · Base':'#038FC8','Secondary · Lightest':'#F2FCFF',
+    'Tertiary · Base':'#FFA300','Tertiary · Lightest':'#FFF6ED',
+  }},
+  Cirro:{light:{
+    'Primary · Base':'#1AC0FF','Primary · Lightest':'#F2FCFF',
+    'Secondary · Base':'#F08721','Secondary · Lightest':'#FFF6ED',
+    'Tertiary · Base':'#2B1189','Tertiary · Lightest':'#EDE8FF',
+  }},
+};
+
+const FEEDBACK_VALS = {
+  error:{
+    Reliant:{light:{accessible:'#E32327',pastel:'#FFF1F0'},dark:{accessible:'#F36E71',pastel:'#392932'}},
+    DE:     {light:{accessible:'#AD1521',pastel:'#FFE6E5'},dark:{accessible:'#FFE6E5',pastel:'#EE7780'}},
+    GME:    {light:{accessible:'#E81523',pastel:'#FFF3F1'}},
+    DP:     {light:{accessible:'#E64D28',pastel:'#FFF3F1'}},
+    Cirro:  {light:{accessible:'#E14402',pastel:'#FFF3F1'}},
+  },
+  success:{
+    Reliant:{light:{accessible:'#35742C',pastel:'#F5FAF5'},dark:{accessible:'#72B06B',pastel:'#163B30'}},
+    DE:     {light:{accessible:'#005427',pastel:'#D6F2E2'},dark:{accessible:'#D6F2E2',pastel:'#005427'}},
+    GME:    {light:{accessible:'#1A764C',pastel:'#EDFFF3'}},
+    DP:     {light:{accessible:'#1A764C',pastel:'#EDFFF3'}},
+    Cirro:  {light:{accessible:'#1A764C',pastel:'#EDFFF3'}},
+  },
+  warning:{
+    Reliant:{light:{accessible:'#AD6800',pastel:'#FFFBF4'},dark:{accessible:'#FCC465',pastel:'#3B402F'}},
+    DE:     {light:{accessible:'#806F27',pastel:'#FFFFBD'},dark:{accessible:'#FFFFBD',pastel:'#806F27'}},
+    GME:    {light:{accessible:'#917110',pastel:'#FFF9EC'}},
+    DP:     {light:{accessible:'#917110',pastel:'#FFF9EC'}},
+    Cirro:  {light:{accessible:'#917110',pastel:'#FFF9EC'}},
+  },
+};
+
+// ─── TYPOGRAPHY TEXT COLOR TOKENS ─────────────────────────────────────────────
+// link   → semantic-layer.text.color.link.default
+// secondary → text.color.paragraph.hierarchy.secondary (grayscale.700)
+// disabled  → text.color.paragraph.feedback.disabled   (grayscale.600 or .500 for DE)
+// legal     → text.color.paragraph.hierarchy.legal      (grayscale.600)
+
+const TEXT_VALS = {
+  Reliant:{
+    light:{ link:'#0097D0', secondary:'#707070', disabled:'#8C8C8C', legal:'#8C8C8C', disabledBg:'#F0F0F0' },
+    dark: { link:'#19B6F1', secondary:'#87979E', disabled:'#87979E', legal:'#87979E', disabledBg:'#030E12' }
+  },
+  DE:{
+    // link = primary.darkest (not primary.base #FFA440)
+    light:{ link:'#CD2500', secondary:'#6C6C6C', disabled:'#969696', legal:'#6C6C6C', disabledBg:'#F0F0F0' },
+    dark: { link:'#CD2500', secondary:'#F0F0FF',  disabled:'#C8C8DC', legal:'#F0F0FF', disabledBg:'#6C6C80' }
+  },
+  GME:{
+    // link = tertiary.base (not primary.base #28B574)
+    light:{ link:'#F47825', secondary:'#525455', disabled:'#525455', legal:'#525455', disabledBg:'#DADCDE' }
+  },
+  DP:{
+    // link = tertiary.base (not primary.base #004C97)
+    light:{ link:'#FFA300', secondary:'#4A4949', disabled:'#4A4949', legal:'#4A4949', disabledBg:'#D0D0CE' }
+  },
+  Cirro:{
+    // link = tertiary.base (not primary.base #1AC0FF)
+    light:{ link:'#2B1189', secondary:'#000000', disabled:'#000000', legal:'#000000', disabledBg:'#D0D0CE' }
+  },
+};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+
+const S = {
+  brand:'Reliant', mode:'light',
+  groups:{ neutral:true, brand:true, feedback:true },
+  allOpen:true,
+  compareBrands:['Reliant'],
+  filter:{ pass:true, large:true, fail:true },
+};
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+
+function effectiveMode(){ return BRANDS[S.brand].hasDark ? S.mode : 'light'; }
+function getN(shade){ const m=effectiveMode(); return(NEUTRAL_VALS[S.brand][m]||NEUTRAL_VALS[S.brand].light)[shade]; }
+function getT(key){ const m=effectiveMode(); return(TEXT_VALS[S.brand][m]||TEXT_VALS[S.brand].light)[key]; }
+function getBrandSurfaces(){
+  const m=effectiveMode();
+  return BRAND_SURFACES[S.brand][m]||BRAND_SURFACES[S.brand].light;
+}
+function getFeedback(type,sub){
+  const m=effectiveMode();
+  return(FEEDBACK_VALS[type][S.brand][m]||FEEDBACK_VALS[type][S.brand].light)[sub];
+}
+
+function getLuminance(hex){
+  const r=parseInt(hex.slice(1,3),16)/255;
+  const g=parseInt(hex.slice(3,5),16)/255;
+  const b=parseInt(hex.slice(5,7),16)/255;
+  const lin=c=>c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);
+  return 0.2126*lin(r)+0.7152*lin(g)+0.0722*lin(b);
+}
+function contrastRatio(fg,bg){
+  const l1=getLuminance(fg),l2=getLuminance(bg);
+  const lo=Math.min(l1,l2),hi=Math.max(l1,l2);
+  return(hi+0.05)/(lo+0.05);
+}
+function fmt(r){ return r.toFixed(1); }
+function getScore(r){ return r>=4.5?'pass':r>=3.0?'large':'fail'; }
+function scoreLabel(s){ return s==='pass'?'AA Pass':s==='large'?'AA Large':'Fail'; }
+// Convert "Primary · Base" → "color-palette/brand-palette/primary/base"
+function brandSurfaceToken(name){ return 'color-palette/brand-palette/'+name.replace(' · ','/').toLowerCase(); }
+
+// heading = primary font; paragraphs/body/legal/link = secondary if brand has one, else primary
+function getPreviewFont(type){
+  const f=FONTS[S.brand];
+  return (type!=='h1'&&f.secondary) ? f.secondary : f.primary;
+}
+
+// Render preview text based on row type
+function renderPreview(type,fgHex,overrideText=''){
+  const ff=getPreviewFont(type);
+  const s=`style="color:${fgHex};font-family:${ff}"`;
+  const cls=type==='legal'?'kce-prev-legal':type==='h1'?'kce-prev-h1':type==='link'?'kce-prev-link':'kce-prev-p1';
+  if(overrideText) return `<span class="kce-prev ${cls}" ${s}>${overrideText}</span>`;
+  switch(type){
+    case 'h1':
+      return `<span class="kce-prev kce-prev-h1" ${s}>Energy</span>`;
+    case 'link':
+      return `<span class="kce-prev kce-prev-link" ${s}>Click me</span>`;
+    case 'legal':
+      return `<span class="kce-prev kce-prev-legal" ${s}>By reading this, you agree to follow all design system rules.</span>`;
+    case 'brand':
+      return `<span class="kce-prev kce-prev-p1" ${s}>Promo content used here.</span>`;
+    default: // p1 — paragraph, secondary, disabled, body, state, default, inverse
+      return `<span class="kce-prev kce-prev-p1" ${s}>Let's power a brighter, smarter future together.</span>`;
+  }
+}
+
+// ─── RENDER HELPERS ───────────────────────────────────────────────────────────
+
+const COPY_ICO=`<svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 11V3a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+const FOLDER_ICO=`<svg class="kce-gh-folder" viewBox="0 0 16 16" fill="none"><path d="M1.5 4a1 1 0 011-1h3.5l1.5 1.5h5.5a1 1 0 011 1V12a1 1 0 01-1 1H2.5a1 1 0 01-1-1V4z" stroke="currentColor" stroke-width="1.3"/></svg>`;
+const CHEVRON_ICO=`<svg class="kce-gh-chevron" viewBox="0 0 13 13" fill="none"><path d="M2.5 4.5l3.5 4 3.5-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+const EXPAND_ICO=`<svg viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5M2 2h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+
+function renderCell(bgHex,fgHex,opts={}){
+  const {bgToken='',fgToken='',rowName='',colName='',previewType='p1',previewText=''}=opts;
+  const r=contrastRatio(fgHex,bgHex);
+  const s=getScore(r);
+  const swatchCls='kce-swatch';
+  return `<div class="kce-cell"
+    onclick="openKcePopover(this)"
+    data-bg="${bgHex}" data-fg="${fgHex}"
+    data-bg-token="${bgToken}" data-fg-token="${fgToken}"
+    data-row="${rowName}" data-col="${colName}"
+    data-ratio="${fmt(r)}" data-score="${s}">
+    <div class="${swatchCls}" style="background:${bgHex}">
+      ${renderPreview(previewType,fgHex,previewText)}
+    </div>
+    <div class="kce-score-bar">
+      <span class="kce-badge ${s}">${scoreLabel(s)}</span>
+      <span class="kce-ratio">${fmt(r)}:1</span>
+    </div>
+  </div>`;
+}
+
+// Brand background cell: tries dark text + white text, shows whichever passes (or both, or both fail)
+function renderBrandCell(bgHex){
+  const darkFg=getN('900');
+  const lightFg='#FFFFFF';
+  const darkR=contrastRatio(darkFg,bgHex);
+  const lightR=contrastRatio(lightFg,bgHex);
+  const darkOk=passAA(darkR);
+  const lightOk=passAA(lightR);
+
+  if(darkOk&&lightOk){
+    // Both pass — show both
+    return `<div class="kce-dual-wrap">
+      ${renderCellLabeled(bgHex,darkFg,'Default')}
+      ${renderCellLabeled(bgHex,lightFg,'Inverse')}
+    </div>`;
+  } else if(darkOk){
+    return renderCellLabeled(bgHex,darkFg,'Default');
+  } else if(lightOk){
+    return renderCellLabeled(bgHex,lightFg,'Inverse');
+  } else {
+    // Neither passes — show both with fail
+    return `<div class="kce-dual-wrap">
+      ${renderCellLabeled(bgHex,darkFg,'Default')}
+      ${renderCellLabeled(bgHex,lightFg,'Inverse')}
+    </div>`;
+  }
+}
+
+function renderCellLabeled(bgHex,fgHex,label){
+  const r=contrastRatio(fgHex,bgHex);
+  const s=getScore(r);
+  return `<div class="kce-${label==='Default'?'cell':'dual-cell'}">
+    <div class="kce-swatch" style="background:${bgHex}">
+      <span class="kce-sample" style="color:${fgHex}">Aa</span>
+    </div>
+    <div class="kce-score-bar">
+      <span class="kce-badge ${s}">${scoreLabel(s)}</span>
+      <span class="kce-ratio">${fmt(r)}:1</span>
+    </div>
+  </div>`;
+}
+
+function rowLabel(hex,name){
+  return `<td class="kce-row-label">
+    <div class="kce-rl-inner">
+      <span class="kce-rl-name">${name}</span>
+    </div>
+  </td>`;
+}
+
+// ─── SHARED COMPARE HELPERS ───────────────────────────────────────────────────
+
+function brandMiniCell(brand){
+  return `<td class="kce-brand-cell"><div class="kce-bc-inner">
+    <span class="kce-bc-dot" style="background:${BRANDS[brand].color};"></span>
+    <span class="kce-bc-label">${brand}</span>
+  </div></td>`;
+}
+
+// ─── SECTION: NEUTRAL ─────────────────────────────────────────────────────────
+
+function renderNeutralSection(){
+  const isCompare=isCompareMode();
+  const brands=isCompare?getEffectiveBrands():[S.brand];
+
+  function getData(){
+    const fg900=getN('900');
+    return {
+      cols:[
+        {hex:getN('000'),name:'Page Background',token:'color-palette/grayscale-palette/000'},
+        {hex:getN('100'),name:'Container 100',  token:'color-palette/grayscale-palette/100'},
+        {hex:getN('200'),name:'Container 200',  token:'color-palette/grayscale-palette/200'},
+        {hex:getN('300'),name:'Container 300',  token:'color-palette/grayscale-palette/300'},
+      ],
+      rows:[
+        {hex:fg900,             name:'Header',    token:'semantic-layer/text/color/paragraph/hierarchy/default',   previewType:'h1'},
+        {hex:fg900,             name:'Paragraph', token:'semantic-layer/text/color/paragraph/hierarchy/default',   previewType:'p1'},
+        {hex:getT('secondary'), name:'Secondary', token:'semantic-layer/text/color/paragraph/hierarchy/secondary', previewType:'p1'},
+        {hex:getT('legal'),     name:'Legal',     token:'semantic-layer/text/color/paragraph/hierarchy/legal',     previewType:'legal'},
+        {hex:getT('link'),      name:'Link',      token:'semantic-layer/text/color/link/default',                  previewType:'link'},
+      ]
+    };
+  }
+
+  const perBrand=brands.map(b=>renderForBrand(b,getData));
+  const ref=perBrand[0];
+
+  if(!isCompare){
+    const thead=`<thead><tr><th class="th-label-col"></th>${ref.cols.map(c=>`<th>${c.name}</th>`).join('')}</tr></thead>`;
+    const tbody=`<tbody>${ref.rows.map((rowDef,ri)=>{
+      const d=perBrand[0]; const r=d.rows[ri];
+      return `<tr>${rowLabel(r.hex,r.name)}${d.cols.map(c=>`<td class="kce-td">${renderCell(c.hex,r.hex,{bgToken:c.token,fgToken:r.token,rowName:r.name,colName:c.name,previewType:r.previewType})}</td>`).join('')}</tr>`;
+    }).join('')}</tbody>`;
+    return `<div class="kce-table-wrap"><table class="kce-table">${thead}${tbody}</table></div>`;
+  }
+
+  // Compare mode: one mini-table per token row; label divider lives outside overflow-x so sticky works
+  const colHead=(ghost)=>`<thead${ghost?' class="kce-ghost-thead"':''}><tr>
+    <th class="th-brand-col"></th>${ref.cols.map(c=>`<th>${c.name}</th>`).join('')}
+  </tr></thead>`;
+  return `<div class="kce-compare-wrap">${ref.rows.map((rowDef,ri)=>{
+    const sep=ri>0?'<div class="kce-cmp-sep"></div>':'';
+    const rows=brands.map((brand,bi)=>{
+      const d=perBrand[bi]; const r=d.rows[ri];
+      return `<tr>${brandMiniCell(brand)}${d.cols.map(c=>`<td class="kce-td">${renderCell(c.hex,r.hex,{bgToken:c.token,fgToken:r.token,rowName:r.name,colName:c.name,previewType:r.previewType})}</td>`).join('')}</tr>`;
+    }).join('');
+    return `${sep}<div class="kce-label-divider">${rowDef.name}</div><div class="kce-table-wrap kce-sync-wrap"><table class="kce-table">${colHead(ri>0)}<tbody>${rows}</tbody></table></div>`;
+  }).join('')}</div>`;
+}
+
+// ─── SECTION: BRAND ───────────────────────────────────────────────────────────
+
+function renderBrandSection(){
+  const isCompare=isCompareMode();
+  const brands=isCompare?getEffectiveBrands():[S.brand];
+
+  function getData(){
+    return {
+      cols:Object.entries(getBrandSurfaces()),
+      rows:[
+        {hex:getN('900'), name:'Default Text', token:'semantic-layer/text/color/paragraph/hierarchy/default', previewType:'brand'},
+        {hex:'#FFFFFF',   name:'Inverse Text', token:'color-palette/grayscale-palette/000',                   previewType:'brand'},
+      ]
+    };
+  }
+
+  const perBrand=brands.map(b=>renderForBrand(b,getData));
+  const ref=perBrand[0];
+
+  if(!isCompare){
+    const thead=`<thead><tr><th class="th-label-col"></th>${ref.cols.map(([name])=>`<th>${name.replace(' · ','<br>')}</th>`).join('')}</tr></thead>`;
+    const tbody=`<tbody>${ref.rows.map((rowDef,ri)=>{
+      const d=perBrand[0]; const r=d.rows[ri];
+      return `<tr>${rowLabel(r.hex,r.name)}${d.cols.map(([name,bgHex])=>`<td class="kce-td">${renderCell(bgHex,r.hex,{bgToken:brandSurfaceToken(name),fgToken:r.token,rowName:r.name,colName:name,previewType:r.previewType})}</td>`).join('')}</tr>`;
+    }).join('')}</tbody>`;
+    return `<div class="kce-table-wrap"><table class="kce-table">${thead}${tbody}</table></div>`;
+  }
+
+  const colHead=(ghost)=>`<thead${ghost?' class="kce-ghost-thead"':''}><tr>
+    <th class="th-brand-col"></th>${ref.cols.map(([name])=>`<th>${name.replace(' · ','<br>')}</th>`).join('')}
+  </tr></thead>`;
+  return `<div class="kce-compare-wrap">${ref.rows.map((rowDef,ri)=>{
+    const sep=ri>0?'<div class="kce-cmp-sep"></div>':'';
+    const rows=brands.map((brand,bi)=>{
+      const d=perBrand[bi]; const r=d.rows[ri];
+      return `<tr>${brandMiniCell(brand)}${d.cols.map(([name,bgHex])=>`<td class="kce-td">${renderCell(bgHex,r.hex,{bgToken:brandSurfaceToken(name),fgToken:r.token,rowName:r.name,colName:name,previewType:r.previewType})}</td>`).join('')}</tr>`;
+    }).join('');
+    return `${sep}<div class="kce-label-divider">${rowDef.name}</div><div class="kce-table-wrap kce-sync-wrap"><table class="kce-table">${colHead(ri>0)}<tbody>${rows}</tbody></table></div>`;
+  }).join('')}</div>`;
+}
+
+// ─── SECTION: FEEDBACK ────────────────────────────────────────────────────────
+
+function renderFeedbackSection(){
+  const isCompare=isCompareMode();
+  const brands=isCompare?getEffectiveBrands():[S.brand];
+
+  function getData(){
+    const bodyText=getN('900');
+    return {
+      bodyText,
+      bodyToken:'semantic-layer/text/color/paragraph/hierarchy/default',
+      cols:[
+        {hex:getFeedback('error','pastel'),   name:'Error',    feedbackFg:getFeedback('error','accessible'),   bgToken:'semantic-layer/container/color/status/error',    fgToken:'semantic-layer/text/color/feedback/error',               previewText:'Action required to proceed.'},
+        {hex:getFeedback('success','pastel'), name:'Success',  feedbackFg:getFeedback('success','accessible'), bgToken:'semantic-layer/container/color/status/success',  fgToken:'semantic-layer/text/color/feedback/success',             previewText:'Submission successful; no further steps.'},
+        {hex:getFeedback('warning','pastel'), name:'Warning',  feedbackFg:getFeedback('warning','accessible'), bgToken:'semantic-layer/container/color/status/warning',  fgToken:'semantic-layer/text/color/feedback/warning',             previewText:'Recommended action suggested.'},
+        {hex:getT('disabledBg'),             name:'Disabled', feedbackFg:getT('disabled'),                    bgToken:'semantic-layer/container/color/status/disabled', fgToken:'semantic-layer/text/color/paragraph/feedback/disabled',  previewText:'Cannot interact with this UI.'},
+      ]
+    };
+  }
+
+  const rowDefs=[
+    {name:'State Text', type:'state'},
+    {name:'Body Text',  type:'body'},
+  ];
+
+  const perBrand=brands.map(b=>renderForBrand(b,getData));
+  const ref=perBrand[0];
+
+  if(!isCompare){
+    const thead=`<thead><tr><th class="th-label-col"></th>${ref.cols.map(c=>`<th>${c.name}</th>`).join('')}</tr></thead>`;
+    const tbody=`<tbody>${rowDefs.map((rowDef)=>{
+      const isState=rowDef.type==='state'; const d=perBrand[0];
+      return `<tr><td class="kce-row-label"><div class="kce-rl-inner"><span class="kce-rl-name">${rowDef.name}</span></div></td>${d.cols.map(c=>`<td class="kce-td">${renderCell(c.hex,isState?c.feedbackFg:d.bodyText,{bgToken:c.bgToken,fgToken:isState?c.fgToken:d.bodyToken,rowName:rowDef.name,colName:c.name,previewType:'p1',previewText:c.previewText})}</td>`).join('')}</tr>`;
+    }).join('')}</tbody>`;
+    return `<div class="kce-table-wrap"><table class="kce-table">${thead}${tbody}</table></div>`;
+  }
+
+  const colHead=(ghost)=>`<thead${ghost?' class="kce-ghost-thead"':''}><tr>
+    <th class="th-brand-col"></th>${ref.cols.map(c=>`<th>${c.name}</th>`).join('')}
+  </tr></thead>`;
+  return `<div class="kce-compare-wrap">${rowDefs.map((rowDef,ri)=>{
+    const sep=ri>0?'<div class="kce-cmp-sep"></div>':'';
+    const isState=rowDef.type==='state';
+    const rows=brands.map((brand,bi)=>{
+      const d=perBrand[bi];
+      return `<tr>${brandMiniCell(brand)}${d.cols.map(c=>`<td class="kce-td">${renderCell(c.hex,isState?c.feedbackFg:d.bodyText,{bgToken:c.bgToken,fgToken:isState?c.fgToken:d.bodyToken,rowName:rowDef.name,colName:c.name,previewType:'p1',previewText:c.previewText})}</td>`).join('')}</tr>`;
+    }).join('');
+    return `${sep}<div class="kce-label-divider">${rowDef.name}</div><div class="kce-table-wrap kce-sync-wrap"><table class="kce-table">${colHead(ri>0)}<tbody>${rows}</tbody></table></div>`;
+  }).join('')}</div>`;
+}
+
+// ─── RENDER GROUP ─────────────────────────────────────────────────────────────
+
+// Temporarily swap S.brand (and mode if needed) to render a section for a specific brand
+// Current brand is always the first entry; compare brands follow (excluding current)
+function getEffectiveBrands(){
+  return [S.brand, ...S.compareBrands.filter(b=>b!==S.brand)];
+}
+function isCompareMode(){
+  return S.compareBrands.some(b=>b!==S.brand);
+}
+
+function renderForBrand(brand,fn){
+  const savedBrand=S.brand, savedMode=S.mode;
+  S.brand=brand;
+  if(!BRANDS[brand].hasDark) S.mode='light';
+  const html=fn();
+  S.brand=savedBrand; S.mode=savedMode;
+  return html;
+}
+
+function renderGroup(key,label,note,contentFn){
+  const open=S.groups[key];
+  return `<div class="kce-group${open?' open':''}" id="kce-grp-${key}">
+    <div class="kce-group-hdr" onclick="toggleGroup('${key}')">
+      <div class="kce-gh-left">
+        ${FOLDER_ICO}
+        <span class="kce-gh-label">${label}</span>
+        <span class="kce-gh-note">${note}</span>
+      </div>
+      ${CHEVRON_ICO}
+    </div>
+    <div class="kce-group-body">
+      ${contentFn()}
+    </div>
+  </div>`;
+}
+
+// ─── HEADER ───────────────────────────────────────────────────────────────────
+
+function renderHeader(){
+  const b=S.brand,hasDark=BRANDS[b].hasDark,bColor=BRANDS[b].color,m=S.mode;
+  return `<div class="kce-header">
+    <div class="kce-header-left">
+      <div class="kce-dd" id="kce-dd-brand">
+        <button class="kce-dd-btn" onclick="kceDD('brand')">
+          <span class="kce-brand-dot" style="background:${bColor};"></span>
+          <span>${BRAND_LABELS[b]}</span>
+          <svg viewBox="0 0 13 13" fill="none"><path d="M2.5 4.5l3.5 4 3.5-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <div class="kce-dd-menu" id="kce-menu-brand">
+          ${BRAND_KEYS.map(k=>`<button onclick="setBrand('${k}')" class="${k===b?'kce-active':''}">
+            <span class="b-dot" style="background:${BRANDS[k].color};"></span>${BRAND_LABELS[k]}
+          </button>`).join('')}
+        </div>
+      </div>
+      <div class="kce-mode-toggle">
+        <button class="kce-mode-btn${m==='light'?' kce-active':''}" onclick="setMode('light')">
+          <svg class="icon-outline" width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13M3.05 3.05l1.06 1.06M9.89 9.89l1.06 1.06M10.95 3.05l-1.06 1.06M4.11 9.89l-1.06 1.06" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <svg class="icon-solid"  width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="3" fill="currentColor"/><path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13M3.05 3.05l1.06 1.06M9.89 9.89l1.06 1.06M10.95 3.05l-1.06 1.06M4.11 9.89l-1.06 1.06" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Light
+        </button>
+        <button class="kce-mode-btn${m==='dark'?' kce-active':''}${!hasDark?' dimmed':''}" onclick="${hasDark?"setMode('dark')":""}">
+          <svg class="icon-outline" width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9.55 3.04A5 5 0 1 0 9.55 10.96A4 4 0 1 1 9.55 3.04Z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          <svg class="icon-solid"  width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9.55 3.04A5 5 0 1 0 9.55 10.96A4 4 0 1 1 9.55 3.04Z" fill="currentColor"/></svg>
+          Dark
+        </button>
+      </div>
+      <div class="kce-dd" id="kce-dd-compare">
+        <button class="kce-cmp-btn${isCompareMode()?' on':''}" id="kce-cmp-btn" onclick="kceDD('compare');renderCompareMenu();">
+          <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="4.5" height="8" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8.5" y="3" width="4.5" height="8" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 7h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Compare
+          <span class="kce-cmp-count" id="kce-cmp-count" style="${isCompareMode()?'':'display:none'}">${getEffectiveBrands().length}</span>
+          <svg viewBox="0 0 13 13" fill="none" style="width:11px;height:11px;opacity:.5;"><path d="M2.5 4.5l3.5 4 3.5-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <div class="kce-dd-menu" id="kce-menu-compare" style="min-width:230px;"></div>
+      </div>
+    </div>
+    <div class="kce-header-right">
+      <button class="kce-icon-btn${S.allOpen?' all-open':''}" id="kce-btn-toggle-all" onclick="kceToggleAll()" title="Expand / collapse all">
+        ${EXPAND_ICO}
+      </button>
+    </div>
+  </div>`;
+}
+
+// ─── LEGEND ───────────────────────────────────────────────────────────────────
+
+function chkIcon(on){
+  return on
+    ? `<svg width="9" height="9" viewBox="0 0 9 9" fill="none"><rect width="9" height="9" rx="2" fill="currentColor" opacity=".25"/><path d="M1.5 4.5l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    : `<svg width="9" height="9" viewBox="0 0 9 9" fill="none"><rect x=".65" y=".65" width="7.7" height="7.7" rx="1.5" stroke="currentColor" stroke-width="1.3" opacity=".5"/></svg>`;
+}
+
+function renderLegend(){
+  const f=S.filter;
+  return `<div class="kce-legend">
+    <div class="kce-legend-item">
+      <span class="kce-legend-badge pass kce-filter-pill${f.pass?'':' inactive'}" onclick="toggleFilter('pass')">${chkIcon(f.pass)} AA Pass</span>
+      <span class="kce-legend-desc">≥ 4.5:1 normal text</span>
+    </div>
+    <span class="kce-legend-sep">·</span>
+    <div class="kce-legend-item">
+      <span class="kce-legend-badge large kce-filter-pill${f.large?'':' inactive'}" onclick="toggleFilter('large')">${chkIcon(f.large)} AA Large</span>
+      <span class="kce-legend-desc">≥ 3.0:1 large text only</span>
+    </div>
+    <span class="kce-legend-sep">·</span>
+    <div class="kce-legend-item">
+      <span class="kce-legend-badge fail kce-filter-pill${f.fail?'':' inactive'}" onclick="toggleFilter('fail')">${chkIcon(f.fail)} Fail</span>
+      <span class="kce-legend-desc">< 3.0:1</span>
+    </div>
+  </div>`;
+}
+
+// ─── MAIN RENDER ──────────────────────────────────────────────────────────────
+
+function render(){
+  closeKcePopover();
+  document.getElementById('kce').innerHTML =
+    renderHeader() + renderLegend() +
+    `<div class="kce-groups">` +
+    renderGroup('neutral','Neutral color backgrounds','Page & container surfaces · typography legibility',renderNeutralSection) +
+    renderGroup('brand',  'Brand color backgrounds',  'Vibrant & pastel brand surfaces · body text selection', renderBrandSection) +
+    renderGroup('feedback','Feedback color backgrounds','Error / success / warning / disabled surfaces · body & state text legibility',renderFeedbackSection) +
+    `</div>`;
+
+  // Sync dark class on body
+  document.body.classList.toggle('dark', S.mode==='dark' && BRANDS[S.brand].hasDark);
+  applyFilterClasses();
+  updateStickyOffsets();
+  syncCompareScrolls();
+}
+
+function updateStickyOffsets(){
+  const h=document.querySelector('.kce-header');
+  if(h) document.documentElement.style.setProperty('--kce-sticky-row',h.offsetHeight+'px');
+}
+
+function syncCompareScrolls(){
+  document.querySelectorAll('.kce-compare-wrap').forEach(wrap=>{
+    const wraps=[...wrap.querySelectorAll('.kce-sync-wrap')];
+    if(wraps.length<2) return;
+    wraps.forEach(sw=>{
+      sw.addEventListener('scroll',()=>{
+        wraps.forEach(other=>{ if(other!==sw) other.scrollLeft=sw.scrollLeft; });
+      },{passive:true});
+    });
+  });
+}
+
+// ─── ACTIONS ──────────────────────────────────────────────────────────────────
+
+function kceDD(which){
+  const id='kce-menu-'+which;
+  const menu=document.getElementById(id);
+  if(!menu) return;
+  const isOpen=menu.classList.contains('open');
+  document.querySelectorAll('.kce-dd-menu.open').forEach(m=>m.classList.remove('open'));
+  if(!isOpen) menu.classList.add('open');
+}
+
+function setBrand(brand){
+  S.brand=brand;
+  if(!BRANDS[brand].hasDark) S.mode='light';
+  render();
+}
+
+const CHECK_SVG=`<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+function renderCompareMenu(){
+  const menu=document.getElementById('kce-menu-compare');
+  if(!menu) return;
+  menu.innerHTML=BRAND_KEYS.map(b=>{
+    const isLocked=b===S.brand;
+    const isChecked=isLocked||S.compareBrands.includes(b);
+    return `<div class="kce-cmp-item${isChecked?' checked':''}${isLocked?' locked':''}"
+      onclick="${isLocked?'':(`toggleCompareBrand('${b}')`)}"
+    >
+      <div class="kce-chk-box">${isChecked?CHECK_SVG:''}</div>
+      <span class="b-dot" style="background:${BRANDS[b].color};border:1.5px solid rgba(0,0,0,.15);width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0;"></span>
+      <span>${BRAND_LABELS[b]}</span>
+      ${isLocked?`<span class="kce-cmp-tag">current</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+function updateCompareBtn(){
+  const btn=document.getElementById('kce-cmp-btn');
+  const countEl=document.getElementById('kce-cmp-count');
+  if(!btn||!countEl) return;
+  const on=isCompareMode();
+  const n=getEffectiveBrands().length;
+  btn.classList.toggle('on',on);
+  if(on){ countEl.style.display=''; countEl.textContent=n; }
+  else { countEl.style.display='none'; }
+}
+
+function toggleCompareBrand(brand){
+  if(brand===S.brand) return; // current brand is always implicitly included
+  const idx=S.compareBrands.indexOf(brand);
+  if(idx>=0){
+    S.compareBrands.splice(idx,1);
+  } else {
+    S.compareBrands.push(brand);
+  }
+  updateCompareBtn();
+  renderCompareMenu();
+  render();
+  closeKcePopover();
+}
+
+function setMode(mode){
+  S.mode=mode;
+  render();
+}
+
+function applyFilterClasses(){
+  document.body.classList.toggle('kce-hide-pass',  !S.filter.pass);
+  document.body.classList.toggle('kce-hide-large', !S.filter.large);
+  document.body.classList.toggle('kce-hide-fail',  !S.filter.fail);
+}
+
+function toggleFilter(score){
+  S.filter[score]=!S.filter[score];
+  applyFilterClasses();
+  // Swap only the legend node — no full re-render needed
+  const old=document.querySelector('.kce-legend');
+  if(old){ const t=document.createElement('div'); t.innerHTML=renderLegend(); old.replaceWith(t.firstChild); }
+  updateStickyOffsets();
+}
+
+function toggleGroup(key){
+  S.groups[key]=!S.groups[key];
+  const grp=document.getElementById('kce-grp-'+key);
+  if(grp) grp.classList.toggle('open',S.groups[key]);
+  const anyOpen=Object.values(S.groups).some(Boolean);
+  S.allOpen=anyOpen;
+  const btn=document.getElementById('kce-btn-toggle-all');
+  if(btn) btn.classList.toggle('all-open',anyOpen);
+  updateStickyOffsets();
+}
+
+function kceToggleAll(){
+  const target=!S.allOpen;
+  Object.keys(S.groups).forEach(k=>S.groups[k]=target);
+  S.allOpen=target;
+  document.querySelectorAll('.kce-group').forEach(g=>g.classList.toggle('open',target));
+  const btn=document.getElementById('kce-btn-toggle-all');
+  if(btn) btn.classList.toggle('all-open',target);
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.kce-dd')) document.querySelectorAll('.kce-dd-menu.open').forEach(m=>m.classList.remove('open'));
+});
+
+// ─── POPOVER ──────────────────────────────────────────────────────────────────
+
+let _kceActiveCell = null;
+
+function openKcePopover(el){
+  if(_kceActiveCell) _kceActiveCell.classList.remove('kce-selected');
+  _kceActiveCell = el;
+  el.classList.add('kce-selected');
+
+  const bg=el.dataset.bg, fg=el.dataset.fg;
+  const bgToken=el.dataset.bgToken, fgToken=el.dataset.fgToken;
+  const rowName=el.dataset.row, colName=el.dataset.col;
+  const ratio=el.dataset.ratio, score=el.dataset.score;
+
+  // Title
+  document.getElementById('kce-pop-title').textContent = rowName + ' on ' + colName;
+
+  // Swatch
+  const sw=document.getElementById('kce-pop-swatch');
+  sw.style.background=bg;
+  const aa=document.getElementById('kce-pop-aa');
+  aa.style.color=fg;
+  const badge=document.getElementById('kce-pop-badge');
+  badge.className='kce-pop-badge '+score;
+  badge.textContent=scoreLabel(score)+' '+ratio+':1';
+
+  // Text fields
+  document.getElementById('kce-pop-fg-token').textContent=fgToken||'—';
+  document.getElementById('kce-pop-fg-hex').textContent=fg;
+
+  // Background fields
+  document.getElementById('kce-pop-bg-token').textContent=bgToken||'—';
+  document.getElementById('kce-pop-bg-hex').textContent=bg;
+
+  // Position
+  const pop=document.getElementById('kce-pop'), ov=document.getElementById('kce-overlay');
+  pop.classList.remove('on'); ov.classList.add('on');
+  const rect=el.getBoundingClientRect();
+  const pw=260, ph=360;
+  let left=rect.right+12, top=rect.top;
+  if(left+pw>window.innerWidth-12) left=rect.left-pw-12;
+  if(left<12) left=Math.min(rect.left, window.innerWidth-pw-12);
+  if(top+ph>window.innerHeight-12) top=window.innerHeight-ph-12;
+  if(top<12) top=12;
+  pop.style.left=left+'px'; pop.style.top=top+'px';
+  requestAnimationFrame(()=>pop.classList.add('on'));
+}
+
+function closeKcePopover(){
+  document.getElementById('kce-pop').classList.remove('on');
+  document.getElementById('kce-overlay').classList.remove('on');
+  if(_kceActiveCell){ _kceActiveCell.classList.remove('kce-selected'); _kceActiveCell=null; }
+}
+
+function kcePopCopy(elId, btn){
+  const text=document.getElementById(elId).textContent;
+  (navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject())
+    .catch(()=>{ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); });
+  btn.classList.add('copied');
+  setTimeout(()=>btn.classList.remove('copied'),1300);
+}
+
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+render();
+window.addEventListener('resize', updateStickyOffsets);
+</script>
+</body>
+</html>
